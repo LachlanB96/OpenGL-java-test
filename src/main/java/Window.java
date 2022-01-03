@@ -79,6 +79,23 @@ public class Window {
         io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);
     }
 
+    public void buildTriangle(){
+        glBegin(GL_TRIANGLES);
+        glVertex2f(0.200f+DataHolder.getInstance().getDataOrZeroFloat("count")/10, 0.100f);
+        glVertex2f(0.00f, 0.400f);
+        glVertex2f(0.00f, 0.600f);
+        glEnd();
+    }
+
+    public void buildLine(float x1, float y1, float x2, float y2){
+        glColor3f(0, 0, 1);
+        glBegin(GL_LINES);
+        //glVertex2f(0.200f+DataHolder.getInstance().getDataOrZeroFloat("count")/10, 0.100f);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y2);
+        glEnd();
+    }
+
     public void run() {
         while (!glfwWindowShouldClose(windowPtr)) {
             offset += 0.01f;
@@ -93,11 +110,14 @@ public class Window {
             ImGui.render();
             imGuiGl3.renderDrawData(ImGui.getDrawData());
             glColor3f(1, 1, 1);
-            glBegin(GL_TRIANGLES);
-            glVertex2f(0.200f+DataHolder.getInstance().getDataOrZeroFloat("count")/10, 0.100f);
-            glVertex2f(0.00f, 0.400f);
-            glVertex2f(0.00f, 0.600f);
-            glEnd();
+            buildTriangle();
+            int linesVertical = 20;
+            //todo make line increment an int then convert it to float. currently oes not work beause of int and float bug error
+            float horizontalLineIncrement = (100/linesVertical);
+            for(float x = -1f; x < 1.0f; x += horizontalLineIncrement){
+                buildLine(x, 1f, x, -1f);
+            }
+            buildLine(0.1f, 0.1f, 0.9f, 0.5f);
 
 
             if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
