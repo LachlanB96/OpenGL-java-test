@@ -3,6 +3,7 @@ import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import input.KeyPressed;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -25,13 +26,22 @@ public class Window {
     private long windowPtr;
     private ImGuiLayer imguiLayer;
 
-    private static final int linesVertical = 20;
-    private static final int linesHorizontal = 20;
+    private static final int WINDOW_WIDTH = 1080;
+    private static final int WINDOW_HEIGHT = 1080;
 
-    private static final int[][] mapData = new int[linesVertical][linesHorizontal];
+    private static final int NUM_HORIZ_BOXES = 20;
+    private static final int NUM_VERT_BOXES = 20;
 
-    int playerPosX = 5;
-    int playerPosY = 10;
+    private static final int NUM_HORIZ_LINES = NUM_HORIZ_BOXES - 1;
+    private static final int NUM_VERT_LINES = NUM_VERT_BOXES - 1;
+
+    private static final int BOX_WIDTH = WINDOW_WIDTH / NUM_VERT_LINES;
+    private static final int BOX_HEIGHT = WINDOW_HEIGHT / NUM_HORIZ_LINES;
+
+    private static Tile[][] mapData = new Tile[NUM_HORIZ_BOXES][NUM_VERT_BOXES];
+
+    int playerPosX = 11;
+    int playerPosY = 11;
 
 
     public Window(ImGuiLayer layer) {
@@ -39,9 +49,33 @@ public class Window {
     }
 
     public void init() {
-        Arrays.fill(mapData[0], 0);
-        mapData[4][3] = 1;
-        System.out.println(mapData);
+
+        for(int x = 0; x < NUM_VERT_BOXES; x++){
+            for(int y = 0; y < NUM_HORIZ_BOXES; y++){
+                mapData[x][y] = new Tile(0, "NA");
+            }
+        }
+        //Arrays.fill(mapData[0], new Tile(0, "NA"));
+        System.out.println(mapData[0][0].getTileID());
+        mapData[4][3] = new Tile(2, "3");
+        System.out.println(mapData[0][0].getTileID());
+        mapData[1][0] = new Tile(2, "3");
+        mapData[1][1] = new Tile(2, "3");
+        mapData[1][2] = new Tile(2, "3");
+        mapData[1][3] = new Tile(2, "3");
+        mapData[1][4] = new Tile(2, "3");
+        System.out.println(mapData[0][0].getTileID());
+        mapData[1][5] = new Tile(2, "3");
+        mapData[10][10] = new Tile(2, "3");
+        mapData[18][18] = new Tile(2, "3");
+        mapData[19][19] = new Tile(2, "3");
+        mapData[0][18] = new Tile(2, "3");
+        mapData[18][0] = new Tile(2, "3");
+        mapData[19][0] = new Tile(2, "3");
+        mapData[11][11] = new Tile(1, "LB");
+        System.out.println(mapData[0][0].getTileID());
+        System.out.println(mapData[11][11].getTileID());
+        System.out.println(mapData[19][19].getTileID());
         initWindow();
         initImGui();
         imGuiGlfw.init(windowPtr, true);
@@ -50,15 +84,34 @@ public class Window {
         glfwSetKeyCallback(windowPtr, new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
-                System.out.println(key);
-                if(key == 87){
-                    playerPosY += 1;
-                } else if(key == 65){
-                    playerPosX -= 1;
+                System.out.printf("key: [%s], action: [%s]", key, action);
+                if(action == 0){
+                    KeyPressed.pressed(key);
+                }
+                if(key == 87 && action == 1){
+                    if(mapData[playerPosX + 1][playerPosY].getTileID() == 0){
+                        mapData[playerPosX + 1][playerPosY] = new Tile(1, "LB");
+                        mapData[playerPosX][playerPosY] = new Tile(0, "Dead");
+                        playerPosX++;
+                    }
+                } else if(key == 65 && action == 1){
+                    if(mapData[playerPosX][playerPosY - 1].getTileID() == 0){
+                        mapData[playerPosX][playerPosY - 1] = new Tile(1, "LB");
+                        mapData[playerPosX][playerPosY] = new Tile(0, "Dead");
+                        playerPosY--;
+                    }
                 } else if(key == 83){
-                    playerPosY -= 1;
+                    if(mapData[playerPosX - 1][playerPosY].getTileID() == 0){
+                        mapData[playerPosX - 1][playerPosY] = new Tile(1, "LB");
+                        mapData[playerPosX][playerPosY] = new Tile(0, "Dead");
+                        playerPosX--;
+                    }
                 } else if(key == 68){
-                    playerPosX += 1;
+                    if(mapData[playerPosX][playerPosY + 1].getTileID() == 0){
+                        mapData[playerPosX][playerPosY + 1] = new Tile(1, "LB");
+                        mapData[playerPosX][playerPosY] = new Tile(0, "Dead");
+                        playerPosY++;
+                    }
                 }
             }
         });
@@ -88,7 +141,7 @@ public class Window {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        windowPtr = glfwCreateWindow(1080, 1080, "My Window", NULL, NULL);
+        windowPtr = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "My Window", NULL, NULL);
 
         if (windowPtr == NULL) {
             System.out.println("Unable to create window");
@@ -115,8 +168,8 @@ public class Window {
         glVertex2f(0.00f, 0.600f);
         glEnd();
     }
-    public void buildTriangle(float x1, float y1){
-        glColor3f(1, 1, 0);
+    public void buildTriangle(float x1, float y1, List<Float> colour){
+        glColor3f(colour.get(0), colour.get(1), colour.get(2));
         glBegin(GL_TRIANGLES);
         glVertex2f(x1, y1 + 0.03f);
         glVertex2f(x1 + 0.015f, y1);
@@ -163,18 +216,42 @@ public class Window {
     public static double mapRange(double a1, double a2, double b1, double b2, double s){
         return b1 + ((s - a1)*(b2 - b1))/(a2 - a1);
     }
-    //TODO MAP the object in mapData to the screen using mapRange
+    public static float mapRangeToFloat(double a1, double a2, double b1, double b2, double s){
+        return (float) (b1 + ((s - a1)*(b2 - b1))/(a2 - a1));
+    }
+    public static float pixelIntToFloat(int pixels, boolean directionX){
+        if(directionX){
+            return (float) mapRange(0, WINDOW_WIDTH, -1, 1, pixels);
+        } else {
+            return (float) mapRange(0, WINDOW_HEIGHT, -1, 1, pixels);
+        }
+    }
     public void buildMap(){
-        int rowCount = 0;
-        for(int[] row : mapData){
-            for(int cell : row){
-                if(cell == 1){
-                    System.out.println(row);
-                    System.out.println(cell);
-                    System.out.println(mapRange(0, linesVertical, -1, 1, cell));
+        for(int lineY = 0; lineY < NUM_VERT_LINES; lineY++){
+            for(int lineX = 0; lineX < NUM_HORIZ_LINES; lineX++){
+                if(mapData[lineX][lineY].getTileID() == 1){
+                    float boxOffsetX = mapRangeToFloat(0, WINDOW_WIDTH, 0, 2, BOX_WIDTH / 2);
+                    float boxOffsetY = mapRangeToFloat(0, WINDOW_HEIGHT, 0, 2, BOX_HEIGHT / 2);
+                    float trianglePosX = mapRangeToFloat(0, NUM_VERT_LINES + 1, -1, 1, lineY) + boxOffsetX;
+                    float trianglePosY = mapRangeToFloat(0, NUM_HORIZ_LINES + 1, -1, 1, lineX) + boxOffsetY;
+                    List<Float> colour = new ArrayList<>();
+                    colour.add(0, 1f);
+                    colour.add(1, 0f);
+                    colour.add(2, 0f);
+                    buildTriangle(trianglePosX, trianglePosY, colour);
+                    //System.out.println(mapRange(0, linesVertical, -1, 1, cell));
+                } else if(mapData[lineX][lineY].getTileID() == 2){
+                    float boxOffsetX = mapRangeToFloat(0, WINDOW_WIDTH, 0, 2, BOX_WIDTH / 2);
+                    float boxOffsetY = mapRangeToFloat(0, WINDOW_HEIGHT, 0, 2, BOX_HEIGHT / 2);
+                    float trianglePosX = mapRangeToFloat(0, NUM_VERT_LINES + 1, -1, 1, lineY) + boxOffsetX;
+                    float trianglePosY = mapRangeToFloat(0, NUM_HORIZ_LINES + 1, -1, 1, lineX) + boxOffsetY;
+                    List<Float> colour = new ArrayList<>();
+                    colour.add(0, 0f);
+                    colour.add(1, 1f);
+                    colour.add(2, 0f);
+                    buildTriangle(trianglePosX, trianglePosY, colour);
                 }
             }
-            rowCount++;
         }
     }
 
@@ -197,13 +274,13 @@ public class Window {
             glColor3f(1, 1, 1);
             buildMagicTriangle();
 
-            float horizontalLineIncrement = (float) 1 / (float) linesVertical * 2;
-            float verticalLineIncrement = (float) 1 / (float) linesHorizontal * 2;
+            float horizontalLineIncrement = (float) 1 / (float) ((NUM_VERT_LINES + 1) / 2);
+            float verticalLineIncrement = (float) 1 / (float) ((NUM_HORIZ_LINES + 1) / 2);
             float lineWidth = 0.001f;
-            for(float x = -1f; x < 1.0f; x += horizontalLineIncrement){
+            for(float x = -1f; x <= 1.0f; x += horizontalLineIncrement){
                 buildQuadPoints(x, -1f, x + lineWidth, -1f, x + lineWidth, 1f, x, 1f);
             }
-            for(float y = -1f; y < 1.0f; y += verticalLineIncrement){
+            for(float y = -1f; y <= 1.0f; y += verticalLineIncrement){
                 buildQuadPoints(1f, y, 1f, y + lineWidth, -1f, y + lineWidth, -1f, y);
             }
             buildPlayer();

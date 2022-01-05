@@ -6,10 +6,27 @@ import static java.lang.Float.parseFloat;
 
 public class DataHolder {
 
+    private static final int NUM_HORIZ_BOXES = 20;
+    private static final int NUM_VERT_BOXES = 20;
+
     private static Map<String, String> data;
+
+    private static Tile[][] mapData = new Tile[NUM_HORIZ_BOXES][NUM_VERT_BOXES];
 
     public Map<String, String> getData(){
         return data;
+    }
+
+    public void initMapData(){
+        for(int x = 0; x < NUM_VERT_BOXES; x++){
+            for(int y = 0; y < NUM_HORIZ_BOXES; y++){
+                mapData[x][y] = new Tile(0, "NA");
+            }
+        }
+    }
+
+    public Tile[][] getMapData(){
+        return mapData;
     }
 
     public float getDataOrZeroFloat(String key){
