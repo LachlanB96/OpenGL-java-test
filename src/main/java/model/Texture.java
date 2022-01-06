@@ -43,4 +43,11 @@ public class Texture{
     public void bind(){
         glBindTexture(GL_TEXTURE_2D, id);
     }
+
+    public int getHeight(){
+        return height;
+    }
+    public int getWidth(){
+        return width;
+    }
 }

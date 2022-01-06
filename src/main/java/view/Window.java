@@ -6,6 +6,7 @@ import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import javafx.util.Pair;
 import model.DataHolder;
 import model.Texture;
 import org.lwjgl.glfw.Callbacks;
@@ -20,7 +21,9 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static input.KeyPressed.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -49,7 +52,7 @@ public class Window {
     private static final int BOX_WIDTH = WINDOW_WIDTH / NUM_VERT_LINES;
     private static final int BOX_HEIGHT = WINDOW_HEIGHT / NUM_HORIZ_LINES;
 
-    //Texture texture = new Texture("src/main/resources/font1.png");
+    private static Texture texture;
 
     int playerPosX = 11;
     int playerPosY = 11;
@@ -257,11 +260,32 @@ public class Window {
 ////            font = new TrueTypeFont(awtFont, false);
 ////            font.draw(0, 0, "This text is showing");
 ////        }
-        //Texture texture = new Texture("../resources/font1.png");
+        texture = new Texture("../resources/font1.png");
+        System.out.println(texture.getHeight());
+        float triangleSize = 0.015f;
+        //texture.bind();
+
+//        glBegin(GL_QUADS);
+//        //glTexCoord2f(0,0);
+////        float x1 = 0.25f;
+////        float y1 = x1;
+////        int scale = 5;
+////        glTexCoord2f(0, 0);
+////        glVertex2f(x1, y1 - triangleSize * scale);
+////        glVertex2f(x1, y1 + triangleSize * scale);
+////        glVertex2f(x1 + triangleSize * scale, y1);
+////        glVertex2f(x1 - triangleSize * scale, y1);
+//        texture.bind();
+//        glVertex2f(0, 0);
+//        glTexCoord2f(0, 0.3f);
+//        glVertex2f(0, 0.3f);
+//        glTexCoord2f(0.3f, 0.3f);
+//        glVertex2f(0.2f,0.3f);
+//        glTexCoord2f(0.3f, 0);
+//        glVertex2f(0.2f,0);
+//        glEnd();
         //texture.bind();
     }
-
-
 
 
 
@@ -280,6 +304,9 @@ public class Window {
             buildMapGridLines();
             buildMap();
             buildHUD();
+            drawLetter("A", 0.5f, -0.5f);
+            drawLetter("B", 0.5f, -0.5f);
+            drawLetter("TEST", 0.5f, -0.5f);
             if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
                 final long backupWindowPtr = org.lwjgl.glfw.GLFW.glfwGetCurrentContext();
                 ImGui.updatePlatformWindows();
@@ -288,6 +315,91 @@ public class Window {
             }
             glfwSwapBuffers(windowPtr);
             glfwWaitEventsTimeout(1);
+        }
+    }
+
+    private void drawLetter(String letter, float x, float y){
+        if(letter.equals("A")){
+            List<Point> letterAList = new ArrayList<>();
+            Map<Integer, Point> letterA = new HashMap<>();
+            letterA.put(2, new Point(15, 100));
+            letterA.put(3, new Point(20, 50));
+            letterA.put(4, new Point(36, 3));
+            letterA.put(5, new Point(36, 30));
+            letterA.put(6, new Point(38, 10));
+            letterA.put(7, new Point(20, 50));
+            letterA.put(8, new Point(10, 10));
+            letterAList.add(new Point(15, 100));
+            letterAList.add(new Point(25, 100));
+            letterAList.add(new Point(40, 0));
+            letterAList.add(new Point(35, 0));
+            letterAList.add(new Point(30, 50));
+            letterAList.add(new Point(30, 50));
+            letterAList.add(new Point(15, 80));
+            letterAList.add(new Point(5, 0));
+            letterAList.add(new Point(0, 0));
+//            letterA.put(6, new Point(25, 80));
+//            letterA.put(7, new Point(15, 80));
+//            letterA.put(8, new Point(0, 0));
+
+
+
+            glBegin(GL_POLYGON);
+            glColor3f(1, 0, 0);
+            int i = 0;
+            for(Point point : letterAList){
+                float tempX = mapRangeToFloat(0, 40, 0, 1, point.x);
+                float tempY = mapRangeToFloat(0, 100, 0, 1, point.y);
+                glVertex2f(tempX, tempY);
+                System.out.printf("[%s]. X: [%s]|[%s], Y: [%s]|[%s]\n", i, point.x, tempX, point.y, tempY);
+                i++;
+            }
+            glEnd();
+
+
+        } else if(letter.equals("TEST")){
+            Map<Integer, Point> letterTest = new HashMap<>();
+            letterTest.put(1, new Point(0, 0));
+            letterTest.put(2, new Point(15, 15));
+            letterTest.put(3, new Point(15, 10));
+            letterTest.put(4, new Point(10, 5));
+            letterTest.put(5, new Point(35, 0));
+            letterTest.put(6, new Point(0, 0));
+
+            glBegin(GL_POLYGON);
+            glColor3f(1, 1, 0);
+            for(Map.Entry<Integer, Point> th : letterTest.entrySet()){
+
+                float tempX = mapRangeToFloat(0, 40, 0, 1, th.getValue().x);
+                float tempY = mapRangeToFloat(0, 100, 0, -1, th.getValue().y);
+                //System.out.printf("[%s]. X: [%s]|[%s], Y: [%s]|[%s]\n", th.getKey(), th.getValue().x, tempX, th.getValue().y, tempY);
+                glVertex2f(tempX, tempY);
+            }
+            glEnd();
+        } else if(letter.equals("B")){
+            Map<Integer, Point> letterTest = new HashMap<>();
+//            letterTest.put(1, new Point(0, 0));
+//            letterTest.put(2, new Point(5, 40));
+//            letterTest.put(3, new Point(10, 0));
+//            letterTest.put(4, new Point(5, 20));
+//            letterTest.put(5, new Point(0, 0));
+
+            letterTest.put(2, new Point(5, 40));
+            letterTest.put(3, new Point(10, 0));
+            letterTest.put(4, new Point(5, 20));
+            letterTest.put(5, new Point(0, 0));
+            letterTest.put(6, new Point(5, 40));
+
+            glBegin(GL_POLYGON);
+            glColor3f(1, 1, 1);
+            for(Map.Entry<Integer, Point> th : letterTest.entrySet()){
+
+                float tempX = mapRangeToFloat(0, 40, 0, 1, th.getValue().x);
+                float tempY = mapRangeToFloat(0, 100, 0, 1, th.getValue().y);
+                //System.out.printf("[%s]. X: [%s]|[%s], Y: [%s]|[%s]\n", th.getKey(), th.getValue().x, tempX, th.getValue().y, tempY);
+                glVertex2f(tempX, tempY);
+            }
+            glEnd();
         }
     }
 
